@@ -19,12 +19,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
     ADD_NODE_MUTATION: {
       actions: `addNodeMutation`,
     },
-    // Sent by query watcher, these are chokidar file events. They mean we
-    // need to extract queries
-    QUERY_FILE_CHANGED: {
-      actions: `markQueryFilesDirty`,
-    },
-    // Sent when webpack sees a changed file
+    // Sent when webpack or chokidar sees a changed file
     SOURCE_FILE_CHANGED: {
       actions: `markSourceFilesDirty`,
     },
@@ -41,7 +36,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
       on: {
         // Ignore mutation events because we'll be running everything anyway
         ADD_NODE_MUTATION: undefined,
-        QUERY_FILE_CHANGED: undefined,
+        SOURCE_FILE_CHANGED: undefined,
         WEBHOOK_RECEIVED: undefined,
       },
       invoke: {
@@ -59,8 +54,6 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
         ADD_NODE_MUTATION: {
           actions: [`markNodesDirty`, `callApi`],
         },
-        // Ignore, because we're about to extract them anyway
-        QUERY_FILE_CHANGED: undefined,
       },
       invoke: {
         src: `initializeData`,
@@ -89,8 +82,8 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
     // Running page and static queries and generating the SSRed HTML and page data
     runningQueries: {
       on: {
-        QUERY_FILE_CHANGED: {
-          actions: forwardTo(`run-queries`),
+        SOURCE_FILE_CHANGED: {
+          actions: [forwardTo(`run-queries`), `markSourceFilesDirty`],
         },
       },
       invoke: {
@@ -167,9 +160,6 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
         ADD_NODE_MUTATION: {
           actions: forwardTo(`waiting`),
         },
-        QUERY_FILE_CHANGED: {
-          actions: forwardTo(`waiting`),
-        },
         SOURCE_FILE_CHANGED: {
           actions: [forwardTo(`waiting`), `markSourceFilesDirty`],
         },
@@ -203,7 +193,7 @@ const developConfig: MachineConfig<IBuildContext, any, AnyEventObject> = {
           actions: [`markNodesDirty`, `callApi`],
         },
         // Ignore, because we're about to extract them anyway
-        QUERY_FILE_CHANGED: undefined,
+        SOURCE_FILE_CHANGED: undefined,
       },
       invoke: {
         src: `reloadData`,

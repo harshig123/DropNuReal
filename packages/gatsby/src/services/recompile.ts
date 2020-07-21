@@ -21,8 +21,7 @@ export async function recompile({
     }
     emitter.on(`COMPILATION_DONE`, finish)
     webpackWatching.resume()
-    // We can imemdiately suspend, because it doesn't affect
-    // compilations in-progress
+    // Suspending is just a flag, so it's safe to re-suspend right away
     webpackWatching.suspend()
   })
 }
